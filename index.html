@@ -10,7 +10,7 @@
         <input type="text" id="fr" value='3' onchange="fire()"> rotation speed (rps)<br>
         <input type="text" id="fs" value='3.1' onchange="fire()"> sample rate (Hz)<br>
         <input type="text" id="speed" value='1' onchange="fire()"> animation speed<br>
-        <input type="checkbox" id='shadow' unchecked onchange="fire()">sample<br>
+        <input type="checkbox" id='shadow' checked onchange="fire()">sample<br>
 
         <canvas id="myCanvas" width="800" height="800" style="border:1px solid #d3d3d3;">
             Your browser does not support the HTML5 canvas tag.</canvas>
@@ -20,6 +20,11 @@
         /*
         button function
         */
+       
+        var fr = 3
+        var fs = 3
+        var shadow_on = true
+        
         function fire() {
             get_para()
         }
@@ -71,9 +76,6 @@
             ctx.globalAlpha = 1;
         }
 
-        var fr = 3
-        var fs = 3
-        var shadow_on = true
 
         function get_para() {
             speed = parseFloat(document.getElementById('speed').value);
