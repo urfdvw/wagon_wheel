@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Simulation of a strobe light</h1>
+        <input type="text" id="fr" value='3' onchange="fire()"> rotation speed (rps)<br>
+        <input type="text" id="fs" value='3.1' onchange="fire()"> sample rate (Hz)<br>
+        <input type="text" id="speed" value='1' onchange="fire()"> animation speed<br>
+        <input type="checkbox" id='shadow' unchecked onchange="fire()">sample<br>
+
+        <canvas id="myCanvas" width="800" height="800" style="border:1px solid #d3d3d3;">
+            Your browser does not support the HTML5 canvas tag.</canvas>
+    </div>
+
+    <script>
+        /*
+        button function
+        */
+        function fire() {
+            get_para()
+        }
+        fire()
+
+
+        /* 
+        Math functions 
+        */
+
+        function time() {
+            var d = new Date();
+            var n = d.getTime();
+            return n
+        }
+
+        function fraction(x) {
+            return x - parseInt(x)
+        }
+
+        /*
+        graphic functions
+        */
+
+        function plot_clear() {
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            ctx.clearRect(0, 0, c.width, c.height);
+        }
+
+        function rotateAndRenderImg(x, y, ang) {
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            var img = new Image();
+            img.src = 'wheel.png';
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(ang)
+            ctx.drawImage(img, -img.width / 2, -img.height / 2, img.width, img.height)
+            ctx.restore()
+        }
+
+        function plot_shadow() {
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, 800, 800); // Shadow
+            ctx.globalAlpha = 1;
+        }
+
+        var fr = 3
+        var fs = 3
+        var shadow_on = true
+
+        function get_para() {
+            speed = parseFloat(document.getElementById('speed').value);
+            fr = parseFloat(document.getElementById('fr').value) * speed;
+            fs = parseFloat(document.getElementById('fs').value) * speed;
+            shadow_on = document.getElementById('shadow').checked;
+        }
+
+        var start = time()
+        var last = 0
+        var rem = 0
+        function draw() {
+            /* plot */
+            var now = (time() - start) / 1000
+            var angle = 2 * Math.PI * fr * now
+            plot_clear()
+            rotateAndRenderImg(400, 400, angle)
+
+            rem += now - last
+            last = now
+            if (rem > 1 / fs) {
+                rem -= 1 / fs
+            } else {
+                if (shadow_on) {
+                    plot_shadow()
+                }
+            }
+            window.requestAnimationFrame(draw);
+        }
+        window.requestAnimationFrame(draw);
+
+
+        // function plot(x, y, color) {
+        //     if (color == null) {
+        //         color = 'red'
+        //     }
+        //     var c = document.getElementById("myCanvas");
+        //     var ctx = c.getContext("2d");
+        //     ctx.beginPath();
+        //     ctx.moveTo(x[0] + c.width / 2, y[0] + c.height / 2);
+        //     for (var i = 1; i < x.length; i++) {
+        //         ctx.lineTo(x[i] + c.width / 2, y[i] + c.height / 2);
+        //     }
+        //     ctx.strokeStyle = color;
+        //     ctx.stroke();
+        // }
+
+        // function plot_hole(x, y) {
+        //     var c = document.getElementById("myCanvas");
+        //     var ctx = c.getContext("2d");
+        //     ctx.beginPath();
+        //     ctx.arc(x + c.width / 2, y + c.height / 2, 3, 0, 2 * Math.PI);
+
+        //     ctx.strokeStyle = "red";
+        //     ctx.stroke();
+        // }
+
+        // function pos_rot(x, y, xc, yc, alpha) {
+        //     for (var i = 0; i < x.length; i++) {
+        //         var xt = x[i];
+        //         var yt = y[i];
+        //         // rotate
+        //         var r = Math.sqrt(xt * xt + yt * yt);
+        //         var theta = Math.atan2(yt, xt) + alpha;
+        //         // move
+        //         x[i] = xc + r * Math.cos(theta);
+        //         y[i] = yc + r * Math.sin(theta);
+        //     }
+        // }
+
+        // /*
+        // model parameters
+        // */
+
+        // // independent parameters
+        // var rout = 380; // radius of frame
+        // var dt = 0.1; // step size in rad
+        // // input parameters
+        // var nout = parseFloat(document.getElementById('nout').value); // number of teeth on the frame
+        // var nin = parseFloat(document.getElementById('nin').value); // number of teeth on the gear
+        // var p = parseFloat(document.getElementById('p').value); // position of hole. 0: center. 1: edge
+        // // dependent parameters
+        // var rin = rout / nout * nin; // radius of gear
+        // var teeth = rout * Math.PI * 2 / nout; // teeth size in arc length
+        // var theta_full = lcm(nout, nin) / nout * 2 * Math.PI
+        // // animation parameter
+        // var rot = 0;
+
+        // function update_para() {
+        //     // input parameters
+        //     nout = parseFloat(document.getElementById('nout').value); // number of teeth on the frame
+        //     nin = parseFloat(document.getElementById('nin').value); // number of teeth on the gear
+        //     p = parseFloat(document.getElementById('p').value); // position of hole. 0: center. 1: edge
+        //     // dependent parameters
+        //     rin = rout / nout * nin; // radius of gear
+        //     teeth = rout * Math.PI * 2 / nout; // teeth size in arc length
+        //     theta_full = lcm(nout, nin) / nout * 2 * Math.PI
+        //     // animation parameter
+        //     rot = 0;
+        // }
+
+        // /*
+        // objects curves
+        // */
+
+        // // object parameters
+        // var xc, yc, xh, yh, alpha
+
+        // function gear(teeth, n) {
+        //     var r = teeth * n / 2 / Math.PI;
+        //     x = [];
+        //     y = [];
+        //     for (var i = 0; i <= n; i++) {
+        //         var theta = i / n * 2 * Math.PI;
+        //         var dt = 0.5 / n * 2 * Math.PI;
+        //         teeth_height = 0.5 * teeth;
+        //         x.push(Math.cos(theta) * (r + teeth_height));
+        //         y.push(Math.sin(theta) * (r + teeth_height));
+        //         x.push(Math.cos(theta + dt) * (r - teeth_height));
+        //         y.push(Math.sin(theta + dt) * (r - teeth_height));
+        //     }
+        //     return [x, y]
+        // }
+
+        // function trace(theta_end) {
+        //     if (theta_end == null) {
+        //         theta_end = theta_full;
+        //     }
+        //     // holders
+        //     var x = [];
+        //     var y = [];
+        //     var theta = 0; // position of gear
+        //     alpha = 0; // rotation of the gear
+        //     while (theta <= theta_end) {
+        //         theta += dt;
+        //         alpha += dt - dt * rout / rin;
+        //         // center of gear
+        //         xc = Math.cos(theta) * (rout - rin)
+        //         yc = Math.sin(theta) * (rout - rin)
+        //         // position of hole
+        //         xh = xc + Math.cos(alpha) * rin * p
+        //         yh = yc + Math.sin(alpha) * rin * p
+        //         // append
+        //         x.push(xh)
+        //         y.push(yh)
+        //     }
+        //     return [x, y]
+        // }
+
+        // /*
+        // action functions
+        // */
+
+
+        // function draw() {
+        //     /* plot */
+        //     plot_clear()
+        //     // frame
+        //     cur = gear(teeth, nout);
+        //     plot(cur[0], cur[1], 'gray')
+        //     // plot gear
+        //     cur = gear(teeth, nin);
+        //     pos_rot(cur[0], cur[1], xc, yc, alpha);
+        //     plot(cur[0], cur[1], 'gray')
+        //     // plot hole
+        //     plot_hole(xh, yh);
+        //     // trace
+        //     cur = trace(rot);
+        //     plot(cur[0], cur[1])
+
+        //     setTimeout(function () {
+        //         if (rot <= theta_full) {
+        //             rot += dt;
+        //             window.requestAnimationFrame(draw);
+        //         }
+        //     }, 1000 / 60);
+        // }
+
+        // function anime_draw() {
+        //     update_para();
+        //     window.requestAnimationFrame(draw);
+        // }
+
+        // function direct_draw() {
+        //     update_para();
+        //     rot = theta_full;
+        //     window.requestAnimationFrame(draw);
+        // }
+    </script>
+</body>
+
+</html>
